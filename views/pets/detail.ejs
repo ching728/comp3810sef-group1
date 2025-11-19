@@ -1,0 +1,148 @@
+<%- include('../partials/header', { title: title }) %>
+<%
+    // 定义 emoji 对象，避免重复
+    const speciesEmoji = {
+        'dragon': '🐉',
+        'cat': '🐱',
+        'dog': '🐶',
+        'rat': '🐀',
+        'elf': '🧝',
+        'robot': '🤖',
+        'wolf': '🐺',
+        'deer': '🦌',
+        'duck': '🦆',
+        'bear': '🐻'
+    };
+%>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/pets">My Pets</a></li>
+                    <li class="breadcrumb-item active"><%= pet.name %></li>
+                </ol>
+            </nav>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <!-- 新增：图片 + fallback emoji + 宠物名 + rarity badge -->
+                        <% if (pet.image) { %>
+                            <img src="/images/<%= pet.image %>" alt="<%= pet.species %> icon" class="pet-detail-icon me-1"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                            <span class="pet-emoji-fallback" style="display: none;">
+                                <%= speciesEmoji[pet.species] || '🐾' %>
+                            </span>
+                        <% } else { %>
+                            <%= speciesEmoji[pet.species] || '🐾' %>
+                        <% } %>
+                        <%= pet.name %>
+                        <span class="badge bg-<%=
+                            pet.rarity === 'Legendary' ? 'danger' :
+                            pet.rarity === 'Epic' ? 'warning' :
+                            pet.rarity === 'Rare' ? 'info' : 'secondary'
+                        %> float-end"><%= pet.rarity %></span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Basic Information</h5>
+                            <p><strong>Species:</strong> <%= pet.species.charAt(0).toUpperCase() + pet.species.slice(1) %></p>
+                            <p><strong>Birth Date:</strong> <%= pet.birthDate.toLocaleDateString() %></p>
+                           
+                            <% if (pet.traits && pet.traits.length > 0) { %>
+                                <p><strong>Traits:</strong><br>
+                                <% pet.traits.forEach(trait => { %>
+                                    <span class="badge bg-primary me-1 mb-1"><%= trait %></span>
+                                <% }) %>
+                                </p>
+                            <% } %>
+                        </div>
+                       
+                        <div class="col-md-6">
+                            <h5>Status</h5>
+                           
+                            <div class="mb-3">
+                                <label>Hunger: <%= pet.stats.hunger %>/100</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-<%= pet.stats.hunger > 50 ? 'success' : 'warning' %>"
+                                         style="width: <%= pet.stats.hunger %>%"></div>
+                                </div>
+                            </div>
+                           
+                            <div class="mb-3">
+                                <label>Happiness: <%= pet.stats.happiness %>/100</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-<%= pet.stats.happiness > 50 ? 'success' : 'warning' %>"
+                                         style="width: <%= pet.stats.happiness %>%"></div>
+                                </div>
+                            </div>
+                           
+                            <div class="mb-3">
+                                <label>Energy: <%= pet.stats.energy %>/100</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-<%= pet.stats.energy > 50 ? 'success' : 'warning' %>"
+                                         style="width: <%= pet.stats.energy %>%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Care buttons - 新增 onClick 音效 -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Care for Your Pet</h5>
+                            <div class="d-grid gap-2 d-md-flex">
+                                <form method="POST" action="/pets/<%= pet._id %>/care" class="me-2" onsubmit="playSound('feed'); return true;">
+                                    <input type="hidden" name="action" value="feed">
+                                    <button type="submit" class="btn btn-success">🍖 Feed</button>
+                                </form>
+                                <form method="POST" action="/pets/<%= pet._id %>/care" class="me-2" onsubmit="playSound('play'); return true;">
+                                    <input type="hidden" name="action" value="play">
+                                    <button type="submit" class="btn btn-info">🎾 Play</button>
+                                </form>
+                                <form method="POST" action="/pets/<%= pet._id %>/care" onsubmit="playSound('rest'); return true;">
+                                    <input type="hidden" name="action" value="rest">
+                                    <button type="submit" class="btn btn-warning">😴 Rest</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <% if (pet.needsCare && pet.needsCare()) { %>
+                        <div class="alert alert-warning mt-3">
+                            <strong>⚠️ Attention!</strong> Your pet needs care! Please feed, play, or let it rest.
+                        </div>
+                    <% } %>
+                </div>
+                <div class="card-footer">
+                    <form action="/pets/<%= pet._id %>/delete" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Are you sure you want to release <%= pet.name %>? This action cannot be undone!')">
+                            🚪 Release Pet
+                        </button>
+                    </form>
+                    <a href="/pets" class="btn btn-outline-secondary float-end">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增：音效 JS 函数（匹配你的 sounds/ 文件夹和 .mp3 格式） -->
+<script>
+function playSound(action) {
+  console.log('Trying to play sound for:', action);  // 调试：Console 看是否触发
+  const soundPath = `/sounds/${action}.mp3`;  // 匹配你的路径：/sounds/feed.mp3 等
+  console.log('Sound path:', soundPath);  // 调试路径
+  const sound = new Audio(soundPath);
+  sound.preload = 'auto';  // 预载
+  sound.volume = 0.5;
+  sound.play().then(() => {
+    console.log('Sound played successfully!');  // 成功日志
+  }).catch(err => {
+    console.error('Sound play failed:', err);  // 详细错误
+  });
+}
+</script>
+
+<%- include('../partials/footer', { dbStatus: dbStatus }) %>
