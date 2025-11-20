@@ -23,14 +23,14 @@
    -header.ejs:
   -pets/
    -crate.ejs: 
-   -detail.ejs: Show the detail with the pets such as hungey, sleepy 
+   -detail.ejs:  Schema for virtual pets with fields like name (String), type (e.g., 'dog', 'cat'), hunger/happiness/health (Numbers, 0-100), level (Number for evolution), owner   (ObjectId ref to User), and timestamps.
    -list.ejs: List out all the pets
-  -dashboard.ejs: 
+  -dashboard.ejs: Main interaction page showing pet stats (hunger, happiness, health bars) and action buttons (feed, play, rest).
   -error.ejs: 
-  -index.ejs:
+  -index.ejs: Homepage with pet adoption form and overview of user's current pets.
   
 - models (folder, if you have): what model files are included, …
-  -User.js: 
+  -User.js: Schema for users with username, email, password, and pets.
   -VirtualPet.js: 
   
 3. The cloud-based server URL (your server host running on the cloud platform) for testing:
